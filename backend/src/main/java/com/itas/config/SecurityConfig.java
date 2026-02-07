@@ -1,23 +1,109 @@
 package com.itas.config;
 
+import com.itas.security.JwtAuthenticationEntryPoint;
+import com.itas.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
-    
+
+    @Autowired
+    private JwtAuthenticationEntryPoint unauthorizedHandler;
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())  // Disable CSRF for development
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/**").permitAll()  // Allow all requests
+                // Public endpoints (without /api prefix since security filter runs before context path)
+                .requestMatchers("/", "/health", "/test-db").permitAll()
+                .requestMatchers("/auth/login", "/auth/register", "/auth/test-user/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                
+                // Enrollment, progress, assessments, certificates require authentication (more specific first)
+                .requestMatchers("/courses/enroll", "/courses/progress", "/courses/enrollments/**").authenticated()
+                .requestMatchers("/resources/*/download").authenticated()
+                .requestMatchers("/assessments/**", "/certificates/**").authenticated()
+                .requestMatchers("/webinars/*/register").authenticated()
+                
+                // Public access to browse courses and resources (read-only)
+                .requestMatchers("/courses", "/courses/*").permitAll()
+                .requestMatchers("/resources", "/resources/search", "/resources/*").permitAll()
+                .requestMatchers("/webinars", "/webinars/upcoming", "/webinars/*").permitAll()
+                .requestMatchers("/help/**").permitAll()
+                
+                // Content Management - Content Admin & System Admin (POST/PUT/DELETE)
+                .requestMatchers("/content/upload", "/content/update/**").hasAnyRole("CONTENT_ADMIN", "SYSTEM_ADMIN")
+                .requestMatchers("/content/archive/**").hasAnyRole("CONTENT_ADMIN", "SYSTEM_ADMIN")
+                
+                // Webinar Management - Training Admin & System Admin
+                .requestMatchers("/webinars/schedule", "/webinars/manage/**").hasAnyRole("TRAINING_ADMIN", "SYSTEM_ADMIN")
+                
+                // Notifications - Communication Officer & System Admin
+                .requestMatchers("/notifications/send").hasAnyRole("COMM_OFFICER", "SYSTEM_ADMIN")
+                
+                // Analytics - Manager, Auditor & System Admin
+                .requestMatchers("/analytics/**").hasAnyRole("MANAGER", "AUDITOR", "SYSTEM_ADMIN")
+                
+                // User Role Management - System Admin only
+                .requestMatchers("/user-roles/**").hasRole("SYSTEM_ADMIN")
+                
+                // All other requests require authentication
                 .anyRequest().authenticated()
             );
+
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }

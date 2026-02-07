@@ -29,7 +29,7 @@ import {
   School as SchoolIcon,
 } from '@mui/icons-material';
 import { coursesAPI } from '../../api/courses';
-import AssessmentQuiz from '../../components/AssessmentQuiz';
+import AssessmentQuiz from '../../components/taxpayer/AssessmentQuiz';
 
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

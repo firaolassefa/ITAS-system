@@ -22,7 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { coursesAPI } from '../../api/courses';
-import CourseCard from '../../components/CourseCard';
+import CourseCard from '../../components/taxpayer/CourseCard';
 import { COURSE_CATEGORIES } from '../../utils/constants';
 
 interface CoursesProps {

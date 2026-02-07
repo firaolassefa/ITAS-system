@@ -5,6 +5,12 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 // Pages
 import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+
+// Public Pages
+import PublicHome from './pages/public/Home';
+import PublicCourses from './pages/public/Courses';
+import PublicResources from './pages/public/Resources';
 
 // Taxpayer Pages
 import TaxpayerDashboard from './pages/taxpayer/Dashboard';
@@ -12,10 +18,20 @@ import TaxpayerCourses from './pages/taxpayer/Courses';
 import CourseDetail from './pages/taxpayer/CourseDetail';
 import TaxpayerResources from './pages/taxpayer/Resources';
 
-// Admin Pages
-import AdminDashboard from './pages/admin/Dashboard';
+// Admin Pages - Different dashboards for each role
+import SystemAdminDashboard from './pages/admin/SystemAdminDashboard';
+import ContentAdminDashboard from './pages/admin/ContentAdminDashboard';
+import TrainingAdminDashboard from './pages/admin/TrainingAdminDashboard';
+import CommOfficerDashboard from './pages/admin/CommOfficerDashboard';
+import ManagerDashboard from './pages/admin/ManagerDashboard';
+import AuditorDashboard from './pages/admin/AuditorDashboard';
+
 import UploadResource from './pages/admin/UploadResource';
 import Analytics from './pages/admin/Analytics';
+import ResourceVersion from './pages/admin/ResourceVersion';
+import WebinarManagement from './pages/admin/WebinarManagement';
+import NotificationCenter from './pages/admin/NotificationCenter';
+import UserRoleManagement from './pages/admin/UserRoleManagement';
 
 // Shared Pages
 import Profile from './pages/Profile';
@@ -53,22 +69,85 @@ function App() {
     setUser(null);
   };
 
+  // Get dashboard based on user role
+  const getDashboardRoute = (userType: string) => {
+    switch(userType) {
+      case 'SYSTEM_ADMIN': return '/admin/system-dashboard';
+      case 'CONTENT_ADMIN': return '/admin/content-dashboard';
+      case 'TRAINING_ADMIN': return '/admin/training-dashboard';
+      case 'COMM_OFFICER': return '/admin/comm-dashboard';
+      case 'MANAGER': return '/admin/manager-dashboard';
+      case 'AUDITOR': return '/admin/auditor-dashboard';
+      case 'TAXPAYER': return '/taxpayer/dashboard';
+      default: return '/';
+    }
+  };
+
+  // Protected route wrapper
+  const ProtectedRoute = ({ 
+    children, 
+    requiredRole,
+    allowedRoles = []
+  }: { 
+    children: React.ReactNode;
+    requiredRole?: string;
+    allowedRoles?: string[];
+  }) => {
+    if (!user) {
+      return <Navigate to="/login" />;
+    }
+
+    if (requiredRole && user.userType !== requiredRole) {
+      return <Navigate to="/unauthorized" />;
+    }
+
+    if (allowedRoles.length > 0 && !allowedRoles.includes(user.userType)) {
+      return <Navigate to="/unauthorized" />;
+    }
+
+    return <>{children}</>;
+  };
+
+  // Admin route wrapper
+  const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+    const adminRoles = ['CONTENT_ADMIN', 'TRAINING_ADMIN', 'COMM_OFFICER', 'SYSTEM_ADMIN', 'MANAGER', 'AUDITOR'];
+    
+    if (!user) {
+      return <Navigate to="/login" />;
+    }
+
+    if (!adminRoles.includes(user.userType)) {
+      return <Navigate to="/unauthorized" />;
+    }
+
+    return <>{children}</>;
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
         <Routes>
-          {/* Public Route */}
+          {/* Public Routes */}
+          <Route path="/" element={<PublicHome />} />
+          <Route path="/public/courses" element={<PublicCourses />} />
+          <Route path="/public/resources" element={<PublicResources />} />
+          
           <Route path="/login" element={
-            user ? <Navigate to={user.userType === 'TAXPAYER' ? '/taxpayer/dashboard' : '/admin/dashboard'} /> :
+            user ? <Navigate to={getDashboardRoute(user.userType)} /> :
             <Login onLogin={handleLogin} />
+          } />
+          
+          <Route path="/register" element={
+            user ? <Navigate to={getDashboardRoute(user.userType)} /> :
+            <Register />
           } />
 
           {/* Taxpayer Routes */}
           <Route path="/taxpayer" element={
-            user?.userType === 'TAXPAYER' ? 
-            <TaxpayerLayout user={user} onLogout={handleLogout} /> : 
-            <Navigate to="/login" />
+            <ProtectedRoute requiredRole="TAXPAYER">
+              <TaxpayerLayout user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
           }>
             <Route index element={<Navigate to="dashboard" />} />
             <Route path="dashboard" element={<TaxpayerDashboard user={user} />} />
@@ -77,28 +156,110 @@ function App() {
             <Route path="resources" element={<TaxpayerResources user={user} />} />
           </Route>
 
-          {/* Admin Routes */}
+          {/* Admin Routes with Role-Specific Dashboards */}
           <Route path="/admin" element={
-            user?.userType !== 'TAXPAYER' ? 
-            <AdminLayout user={user} onLogout={handleLogout} /> : 
-            <Navigate to="/login" />
+            <AdminRoute>
+              <AdminLayout user={user} onLogout={handleLogout} />
+            </AdminRoute>
           }>
-            <Route index element={<Navigate to="dashboard" />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="upload-resource" element={<UploadResource />} />
-            <Route path="analytics" element={<Analytics />} />
+            <Route index element={<Navigate to={user ? getDashboardRoute(user.userType).replace('/admin/', '') : 'system-dashboard'} />} />
+            
+            {/* Role-Specific Dashboards */}
+            <Route path="system-dashboard" element={
+              <ProtectedRoute allowedRoles={['SYSTEM_ADMIN']}>
+                <SystemAdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="content-dashboard" element={
+              <ProtectedRoute allowedRoles={['CONTENT_ADMIN']}>
+                <ContentAdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="training-dashboard" element={
+              <ProtectedRoute allowedRoles={['TRAINING_ADMIN']}>
+                <TrainingAdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="comm-dashboard" element={
+              <ProtectedRoute allowedRoles={['COMM_OFFICER']}>
+                <CommOfficerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="manager-dashboard" element={
+              <ProtectedRoute allowedRoles={['MANAGER']}>
+                <ManagerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="auditor-dashboard" element={
+              <ProtectedRoute allowedRoles={['AUDITOR']}>
+                <AuditorDashboard />
+              </ProtectedRoute>
+            } />
+            
+            {/* Content Management Routes */}
+            <Route path="upload-resource" element={
+              <ProtectedRoute allowedRoles={['CONTENT_ADMIN', 'SYSTEM_ADMIN']}>
+                <UploadResource />
+              </ProtectedRoute>
+            } />
+            <Route path="resource-version" element={
+              <ProtectedRoute allowedRoles={['CONTENT_ADMIN', 'SYSTEM_ADMIN']}>
+                <ResourceVersion />
+              </ProtectedRoute>
+            } />
+            
+            {/* Training Admin Routes */}
+            <Route path="webinar-management" element={
+              <ProtectedRoute allowedRoles={['TRAINING_ADMIN', 'SYSTEM_ADMIN']}>
+                <WebinarManagement />
+              </ProtectedRoute>
+            } />
+            
+            {/* Communication Officer Routes */}
+            <Route path="notification-center" element={
+              <ProtectedRoute allowedRoles={['COMM_OFFICER', 'SYSTEM_ADMIN']}>
+                <NotificationCenter />
+              </ProtectedRoute>
+            } />
+            
+            {/* System Admin Routes */}
+            <Route path="user-role-management" element={
+              <ProtectedRoute allowedRoles={['SYSTEM_ADMIN']}>
+                <UserRoleManagement />
+              </ProtectedRoute>
+            } />
+            
+            {/* Analytics Routes (Manager, Auditor, System Admin) */}
+            <Route path="analytics" element={
+              <ProtectedRoute allowedRoles={['MANAGER', 'AUDITOR', 'SYSTEM_ADMIN']}>
+                <Analytics />
+              </ProtectedRoute>
+            } />
           </Route>
 
           {/* Shared Routes */}
           <Route path="/profile" element={
-            user ? <Profile user={user} /> : <Navigate to="/login" />
+            <ProtectedRoute>
+              <Profile user={user} />
+            </ProtectedRoute>
           } />
 
-          {/* Default Route */}
-          <Route path="/" element={
-            user ? 
-            <Navigate to={user.userType === 'TAXPAYER' ? '/taxpayer/dashboard' : '/admin/dashboard'} /> :
-            <Navigate to="/login" />
+          {/* Additional Pages */}
+          <Route path="/unauthorized" element={
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <h1>401 - Unauthorized</h1>
+              <p>You don't have permission to access this page.</p>
+              <button onClick={() => window.history.back()}>Go Back</button>
+            </div>
+          } />
+
+          {/* Catch-all 404 Route */}
+          <Route path="*" element={
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <h1>404 - Page Not Found</h1>
+              <p>The page you're looking for doesn't exist.</p>
+              <button onClick={() => window.location.href = '/'}>Go Home</button>
+            </div>
           } />
         </Routes>
       </Router>

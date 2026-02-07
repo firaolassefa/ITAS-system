@@ -28,8 +28,8 @@ import {
 } from '@mui/icons-material';
 import { resourcesAPI } from '../../api/resources';
 import { COURSE_CATEGORIES, RESOURCE_TYPES } from '../../utils/constants';
-import ResourceCard from '../../components/ResourceCard';
-import VideoPlayer from '../../components/VideoPlayer';
+import ResourceCard from '../../components/taxpayer/ResourceCard';
+import VideoPlayer from '../../components/taxpayer/VideoPlayer';
 
 interface ResourcesProps {
   user: any;

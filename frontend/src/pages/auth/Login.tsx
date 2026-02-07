@@ -32,7 +32,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
     try {
       const response: any = await authAPI.login(username, password);
-      const { user, token } = response.data;
+      const { user, token } = response;
       
       onLogin(user, token);
       navigate(user.userType === 'TAXPAYER' ? '/taxpayer/dashboard' : '/admin/dashboard');
@@ -112,10 +112,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               Demo credentials:
             </Typography>
             <Typography variant="body2">
-              <strong>Taxpayer:</strong> taxpayer / 123
+              <strong>Taxpayer:</strong> taxpayer / Taxpayer@123
             </Typography>
             <Typography variant="body2">
-              <strong>Admin:</strong> admin / 123
+              <strong>Admin:</strong> systemadmin / Admin@123
             </Typography>
           </Box>
         </Paper>

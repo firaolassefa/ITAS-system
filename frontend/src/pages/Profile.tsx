@@ -39,7 +39,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { coursesAPI } from '../api/courses';
 import { certificatesAPI } from '../api/certificates';
-import CertificateViewer from '../components/CertificateViewer';
+import CertificateViewer from '../components/taxpayer/CertificateViewer';
 
 interface ProfileProps {
   user: any;
@@ -411,35 +411,35 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
                 <ListItem>
                   <ListItemText
                     primary="Enrolled in VAT Fundamentals Course"
-                    secondary="January 15, 2024 • 10:30 AM"
+                    secondary="January 15, 2024 ï¿½ 10:30 AM"
                   />
                 </ListItem>
                 <Divider />
                 <ListItem>
                   <ListItemText
                     primary="Completed Module 1: Introduction to VAT"
-                    secondary="January 18, 2024 • 2:15 PM"
+                    secondary="January 18, 2024 ï¿½ 2:15 PM"
                   />
                 </ListItem>
                 <Divider />
                 <ListItem>
                   <ListItemText
                     primary="Downloaded VAT Compliance Handbook"
-                    secondary="January 20, 2024 • 11:00 AM"
+                    secondary="January 20, 2024 ï¿½ 11:00 AM"
                   />
                 </ListItem>
                 <Divider />
                 <ListItem>
                   <ListItemText
                     primary="Earned Certificate: VAT Fundamentals"
-                    secondary="January 25, 2024 • 3:45 PM"
+                    secondary="January 25, 2024 ï¿½ 3:45 PM"
                   />
                 </ListItem>
                 <Divider />
                 <ListItem>
                   <ListItemText
                     primary="Enrolled in Income Tax Basics"
-                    secondary="February 1, 2024 • 9:30 AM"
+                    secondary="February 1, 2024 ï¿½ 9:30 AM"
                   />
                 </ListItem>
               </List>

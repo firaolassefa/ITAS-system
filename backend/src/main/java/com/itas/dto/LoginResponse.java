@@ -1,22 +1,43 @@
 package com.itas.dto;
 
-public class LoginResponse {
-    private Object user;
-    private String token;
-    private String message;
+import com.itas.model.User;
 
+public class LoginResponse {
+    private String message;
+    private User user;
+    private String token;
+    
+    // Constructors
     public LoginResponse() {}
     
-    public LoginResponse(Object user, String token, String message) {
+    public LoginResponse(String message, User user, String token) {
+        this.message = message;
         this.user = user;
         this.token = token;
-        this.message = message;
     }
-
-    public Object getUser() { return user; }
-    public void setUser(Object user) { this.user = user; }
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    
+    // Getters and Setters
+    public String getMessage() { 
+        return message; 
+    }
+    
+    public void setMessage(String message) { 
+        this.message = message; 
+    }
+    
+    public User getUser() { 
+        return user; 
+    }
+    
+    public void setUser(User user) { 
+        this.user = user; 
+    }
+    
+    public String getToken() { 
+        return token; 
+    }
+    
+    public void setToken(String token) { 
+        this.token = token; 
+    }
 }

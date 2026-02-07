@@ -26,7 +26,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { coursesAPI } from '../../api/courses';
 import { certificatesAPI } from '../../api/certificates';
-import CourseCard from '../../components/CourseCard';
+import CourseCard from '../../components/taxpayer/CourseCard';
 
 interface DashboardProps {
   user: any;
@@ -194,47 +194,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         <Grid item xs={12} lg={4}>
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" gutterBottom>
-              Recent Activity
-            </Typography>
-            <List>
-              <ListItem>
-                <ListItemText
-                  primary="Enrolled in VAT Fundamentals"
-                  secondary="2 days ago"
-                />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText
-                  primary="Completed Module 1"
-                  secondary="1 day ago"
-                />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText
-                  primary="Downloaded VAT Guide"
-                  secondary="Today"
-                />
-              </ListItem>
-            </List>
-          </Paper>
-
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
               Quick Actions
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <Button
                   fullWidth
-                  variant="outlined"
+                  variant="contained"
                   onClick={() => navigate('/taxpayer/courses')}
                 >
                   Browse Courses
                 </Button>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -243,22 +215,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   View Resources
                 </Button>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <Button
                   fullWidth
                   variant="outlined"
                   onClick={() => navigate('/profile')}
                 >
                   My Profile
-                </Button>
-              </Grid>
-              <Grid item xs={6}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={() => navigate('/taxpayer/courses')}
-                >
-                  Continue Learning
                 </Button>
               </Grid>
             </Grid>

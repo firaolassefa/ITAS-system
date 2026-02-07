@@ -2,7 +2,10 @@ package com.itas.model;
 
 public enum UserType {
     TAXPAYER,
-    ADMIN,
-    INSTRUCTOR,
+    CONTENT_ADMIN,
+    TRAINING_ADMIN,
+    COMM_OFFICER,
+    SYSTEM_ADMIN,
+    MANAGER,
     AUDITOR
 }
